@@ -1,10 +1,15 @@
 import conf
+
+
 import discord
+from discord.utils import get
 from discord.ext import commands
+import img_handler as imhl
+import os
 
 # # Настраиваем расширенный доступ Intents
-# intense = discord.Intents.default()
-# intense.members = True
+intense = discord.Intents.default()
+intense.members = True
 
 # # Создаём подключение бота
 # client = discord.Client(intents=intense)
@@ -99,6 +104,9 @@ from discord.ext import commands
 
 bot = commands.Bot(command_prefix= "!")
 
+
+channel = 825340703084118046
+
 @bot.command(name = "hello") # Декоратор
 async def command_hello(ctx, *args): # args = tuple (кортежи)
     message = " ".join(args)
@@ -106,18 +114,69 @@ async def command_hello(ctx, *args): # args = tuple (кортежи)
         msg = f"Hello to you! You said: '{message}'"
         await ctx.channel.send(msg)
 
-# 2. /about_me - сообщение пользователю по его параметрам id/name (если есть ник то добавить "твой ник nick")
+# 2. !about_me - сообщение пользователю по его параметрам id/name (если есть ник то добавить "твой ник nick")
 @bot.command(name = "about_me")
 async def command_about_me(ctx):
-    msg = f'Hello, {ctx.author.name}, your id is: {ctx.author.id}'
-    await ctx.channel.send(msg)
+    if ctx.channel.id == 825340703084118046:
+        msg = f'Hello, {ctx.author.name}, your id is: {ctx.author.id}'
+        await ctx.channel.send(msg)
 
-# *3. /repeat [] - повторить за пользователем
+# *3. !repeat [] - повторить за пользователем
 @bot.command(name="repeat")
 async def command_repeat(ctx, *args):
-    message = " ".join(args)
-    msg = f'{message}'
-    await ctx.channel.send(msg)
+    if ctx.channel.id == 825340703084118046:
+        message = " ".join(args)
+        msg = f'{message}'
+        await ctx.channel.send(msg)
+
+#*4 !get_member
+@bot.command(name="get_member")
+async def command_repeat(ctx, member: discord.Member=None):
+    msg = None
+    global channel
+    if ctx.channel.id == channel:
+
+        if member:
+            msg = f'Member {member.name} {"({member.nick})" if member.nick else ""} - {member.id}'
+
+        if msg == None:
+            msg = "Error"
+        
+        await ctx.channel.send(msg)
+         
+
+#*5 !get_members
+@bot.command(name="get_members")
+async def command_repeat(ctx, *args):
+    if ctx.channel.id == 825340703084118046:
+        if ctx.author.guild.name == 'Bots':
+            msg = ""
+            for idx, member in list(enumerate(ctx.author.guild.members)):
+                msg += f'{idx+1}. {member.name} { f"[{member.nick}]" if member.nick else ""} - {member.id}\n'
+            await ctx.channel.send(msg)
+
+@bot.command(name="get_channels")
+async def command_repeat(ctx, *args):
+    if ctx.channel.id == 825340703084118046:           
+        msg = ""
+        if ctx.author.guild.name == 'Bots':
+            for idx, channel in list(enumerate(ctx.author.guild.channels)):
+                msg += f'{idx+1}. {channel.name} - {channel.id}\n'
+        await ctx.channel.send(msg)
+
+#*7 !mk
+@bot.command(name="mk")
+async def command_mk(ctx, f1: discord.Member=None, f2: discord.Member=bot.user):
+    msg = None
+    global channel
+    if ctx.channel.id == channel:
+        # Передаём аватары обработчику
+        await imhl.vs_create(f1.avatar_url, f2.avatar_url)
+        # Отправляем полученный результат
+        await ctx.channel.send(file=discord.File(os.path.join("./img/result.png")))
+
+
+
 
 
 bot.run(conf.bot_token)
